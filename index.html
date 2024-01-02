@@ -1,7 +1,827 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><link rel="stylesheet" type="text/css" href="//fonts.loli.net/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.4"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.4"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"><title>WQP</title></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">WQP</h1><a id="logo" href="/.">WQP</a><p class="description"></p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索"></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h2 class="post-title"><a href="/2020/12/08/Spring+IOC+容器源码分析/">Spring IOC 容器源码分析</a></h2><div class="post-meta"><p><span>【已置顶】</span><span class="date">2020-12-08</span><span><a href="/categories/Spring/" class="category">Spring</a></span></p></div><div class="post-content"><p>Spring 最重要的概念是 IOC 和 AOP，本篇文章其实就是要带领大家来分析下 Spring 的 IOC 容器。既然大家平时都要用到 Spring，怎么可以不好好了解 Spring 呢？阅读本文并不能让你成为 Spring 专家，不过一定有助于大家理解 Spring 的很多概念，帮助大家排查应用中和 Spring 相关的一些问题。</p></div><p class="readmore"><a href="/2020/12/08/Spring+IOC+容器源码分析/">阅读更多</a></p></div><div class="post"><h2 class="post-title"><a href="/2023/12/29/01-jvm内存区域/">01-jvm内存区域</a></h2><div class="post-meta"><p><span class="date">2023-12-29</span><span><a href="/categories/java/" class="category">java</a></span></p></div><p class="readmore"><a href="/2023/12/29/01-jvm内存区域/">阅读更多</a></p></div><div class="post"><h2 class="post-title"><a href="/2023/05/22/大数据入门篇/">大数据入门篇</a></h2><div class="post-meta"><p><span class="date">2023-05-22</span><span><a href="/categories/大数据/" class="category">大数据</a></span></p></div><div class="post-content"><h2 id="大数据入门篇"><a href="#大数据入门篇" class="headerlink" title="大数据入门篇"></a>大数据入门篇</h2><h3 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a><a href="https://mp.weixin.qq.com/s?__biz=MzI4Njg5MDA5NA==&mid=2247485115&idx=1&sn=5d269f40f820c82b460993669ca6242e&chksm=ebd747badca0ceac9953f82e08b1d1a49498ebd4af77ec5d628a0682bb9f0ac5ab347411f654&token=1741918942&lang=zh_CN&scene=21#wechat_redirect" target="_blank" rel="noopener">ZooKeeper</a></h3><ul></ul></div><p class="readmore"><a href="/2023/05/22/大数据入门篇/">阅读更多</a></p></div><div class="post"><h2 class="post-title"><a href="/2020/12/23/IO与NIO的区别/">IO与NIO的区别</a></h2><div class="post-meta"><p><span class="date">2020-12-23</span><span><a href="/categories/java/" class="category">java</a></span></p></div><div class="post-content"><p> <strong>JAVA NIO vs IO</strong> </p></div><p class="readmore"><a href="/2020/12/23/IO与NIO的区别/">阅读更多</a></p></div><div class="post"><h2 class="post-title"><a href="/2020/12/04/sentinel实现对网关微服务管理/">sentinel实现对网关微服务管理</a></h2><div class="post-meta"><p><span class="date">2020-12-04</span><span><a href="/categories/java/" class="category">java</a></span></p></div><div class="post-content"><h2 id="Sentinel-通过-nacos-对-Spring-Cloud-Gateway-持久化管理"><a href="#Sentinel-通过-nacos-对-Spring-Cloud-Gateway-持久化管理" class="headerlink" title="Sentinel 通过 nacos 对 Spring Cloud Gateway 持久化管理"></a>Sentinel 通过 nacos 对 Spring Cloud Gateway 持久化管理</h2><h3 id="客户端使用时需引入以下模块（以-Maven-为例）："><a href="#客户端使用时需引入以下模块（以-Maven-为例）：" class="headerlink" title="客户端使用时需引入以下模块（以 Maven 为例）："></a>客户端使用时需引入以下模块（以 Maven 为例）：</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba.csp<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>sentinel-transport-simple-http<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-alibaba-sentinel<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.1.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-alibaba-sentinel-gateway<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.1.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- Sentinel扩展Nacos数据源的依赖 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba.csp<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>sentinel-datasource-nacos<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure></div><p class="readmore"><a href="/2020/12/04/sentinel实现对网关微服务管理/">阅读更多</a></p></div><div class="post"><h2 class="post-title"><a href="/2020/10/14/nginx部署带项目名的vue项目/">nginx部署带项目名的vue项目</a></h2><div class="post-meta"><p><span class="date">2020-10-14</span><span><a href="/categories/其他/" class="category">其他</a></span></p></div><div class="post-content"><p>nginx部署带项目名的vue项目：</p></div><p class="readmore"><a href="/2020/10/14/nginx部署带项目名的vue项目/">阅读更多</a></p></div><div class="post"><h2 class="post-title"><a href="/2020/10/01/A-算法/">A*算法</a></h2><div class="post-meta"><p><span class="date">2020-10-01</span><span><a href="/categories/算法/" class="category">算法</a></span></p></div><div class="post-content"><h2 id="A-算法"><a href="#A-算法" class="headerlink" title="A*算法"></a>A*算法</h2><p> <em>A*算法是一种启发式最小代价寻路算法</em>  </p></div><p class="readmore"><a href="/2020/10/01/A-算法/">阅读更多</a></p></div><div class="post"><h2 class="post-title"><a href="/2020/10/01/凸包算法（分治）/">凸包算法（分治）</a></h2><div class="post-meta"><p><span class="date">2020-10-01</span><span><a href="/categories/算法/" class="category">算法</a></span></p></div><div class="post-content"><h2 id="凸包问题–分治法"><a href="#凸包问题–分治法" class="headerlink" title="凸包问题–分治法"></a>凸包问题–分治法</h2><p>获取能够完全包含平面上n个给定点的凸多边形。</p></div><p class="readmore"><a href="/2020/10/01/凸包算法（分治）/">阅读更多</a></p></div><div class="post"><h2 class="post-title"><a href="/2020/08/24/开发出现的问题/">开发出现的问题</a></h2><div class="post-meta"><p><span class="date">2020-08-24</span><span><a href="/categories/其他/" class="category">其他</a></span></p></div><div class="post-content"><h2 id="开发中遇到的小问题汇总"><a href="#开发中遇到的小问题汇总" class="headerlink" title="开发中遇到的小问题汇总"></a>开发中遇到的小问题汇总</h2><h3 id="线程Thread中声明式事务不起作用"><a href="#线程Thread中声明式事务不起作用" class="headerlink" title="线程Thread中声明式事务不起作用"></a>线程Thread中声明式事务不起作用</h3><p> 使用编程式事务 </p></div><p class="readmore"><a href="/2020/08/24/开发出现的问题/">阅读更多</a></p></div><div class="post"><h2 class="post-title"><a href="/2020/07/08/单例模式/">单例模式</a></h2><div class="post-meta"><p><span class="date">2020-07-08</span><span><a href="/categories/设计模式/" class="category">设计模式</a></span></p></div><div class="post-content"><h1 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h1><p>单例模式（Singleton Pattern）是 Java 中最简单的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p></div><p class="readmore"><a href="/2020/07/08/单例模式/">阅读更多</a></p></div><nav class="page-navigator"><span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/">下一页</a></nav></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2023/12/29/01-jvm内存区域/">01-jvm内存区域</a></li><li class="post-list-item"><a class="post-list-link" href="/2023/05/22/大数据入门篇/">大数据入门篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/12/23/IO与NIO的区别/">IO与NIO的区别</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/12/08/Spring+IOC+容器源码分析/">Spring IOC 容器源码分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/12/04/sentinel实现对网关微服务管理/">sentinel实现对网关微服务管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/10/14/nginx部署带项目名的vue项目/">nginx部署带项目名的vue项目</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/10/01/A-算法/">A*算法</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/10/01/凸包算法（分治）/">凸包算法（分治）</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/08/24/开发出现的问题/">开发出现的问题</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/08/单例模式/">单例模式</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/SQL/">SQL</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/java/">java</a><span class="category-list-count">36</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/其他/">其他</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/jvm/" style="font-size: 15px;">jvm</a> <a href="/tags/算法/" style="font-size: 15px;">算法</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/其他/" style="font-size: 15px;">其他</a> <a href="/tags/JQuery/" style="font-size: 15px;">JQuery</a> <a href="/tags/MySQL/" style="font-size: 15px;">MySQL</a> <a href="/tags/框架/" style="font-size: 15px;">框架</a> <a href="/tags/python/" style="font-size: 15px;">python</a> <a href="/tags/redis/" style="font-size: 15px;">redis</a> <a href="/tags/设计模式/" style="font-size: 15px;">设计模式</a> <a href="/tags/大数据/" style="font-size: 15px;">大数据</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">十二月 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><!--pif theme.baidusitemap
-  a(href=config.root+"baidusitemap.xml")= __("baidusitemap")
-  |  |  
-if theme.feed
-  a(href=config.root+"atom.xml")= __("footer_rss")
-  |  |  
-a(href=config.root+"about/")= __("contact_author")--><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次，本站总访客数:<i id="busuanzi_container_site_uv"><i id="busuanzi_value_site_uv"></i></i>人</p><p><span> Copyright &copy;<a href="/." rel="nofollow">JasonWong.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.4"></script><script type="text/javascript" src="/js/totop.js?v=2.0.4" async></script></body></html>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>WQP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  
+  
+    <link rel="alternate" href="/atom.xml" title="WQP" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">WQP</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        
+          <a class="main-nav-link" href="/."><i class="fa fa-home"></i> 首页</a>
+        
+          <a class="main-nav-link" href="/archives/"><i class="fa fa-archive"></i> 归档</a>
+        
+          <a class="main-nav-link" href="/about/"><i class="fa fa-user"></i> 关于</a>
+        
+      </nav>
+    </div>
+    <div id="search-form">
+      <div id="result-mask" class="hide"></div>
+      <label><input id="search-key" type="text" autocomplete="off" placeholder="搜索"></label>
+      <div id="result-wrap" class="hide">
+        <div id="search-result"></div>
+      </div>
+      <div class="hide">
+        <template id="search-tpl">
+          <div class="item">
+            <a href="/{path}" title="{title}">
+              <div class="title">{title}</div>
+              <div class="time">{date}</div>
+              <div class="tags">{tags}</div>
+            </a>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main">
+  <article id="post-spring入门/Spring+IOC+容器源码分析" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2020/12/08/spring%E5%85%A5%E9%97%A8/Spring+IOC+%E5%AE%B9%E5%99%A8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">Spring IOC 容器源码分析</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+        <span class='article-top'>【置顶】</span>
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2020-12-08T12:30:35.000Z" itemprop="datePublished">2020年12月08日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/Spring/">Spring</a>
+  </div>
+
+      
+      
+<a href="/2020/12/08/spring%E5%85%A5%E9%97%A8/Spring+IOC+%E5%AE%B9%E5%99%A8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Spring 最重要的概念是 IOC 和 AOP，本篇文章其实就是要带领大家来分析下 Spring 的 IOC 容器。既然大家平时都要用到 Spring，怎么可以不好好了解 Spring 呢？阅读本文并不能让你成为 Spring 专家，不过一定有助于大家理解 Spring 的很多概念，帮助大家排查应用中和 Spring 相关的一些问题。</p>
+<p>本文采用的源码版本是 4.3.11.RELEASE，算是 5.0.x 前比较新的版本了。为了降低难度，本文所说的所有的内容都是基于 xml 的配置的方式，实际使用已经很少人这么做了，至少不是纯 xml 配置，不过从理解源码的角度来看用这种方式来说无疑是最合适的。</p>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%A1%86%E6%9E%B6/" rel="tag">框架</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2020/12/08/spring%E5%85%A5%E9%97%A8/Spring+IOC+%E5%AE%B9%E5%99%A8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+  <article id="post-jvm/03-垃圾回收" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">03-垃圾回收</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2023-12-31T12:28:24.000Z" itemprop="datePublished">2023年12月31日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/java/">java</a>
+  </div>
+
+      
+      
+<a href="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="JVM垃圾回收"><a href="#JVM垃圾回收" class="headerlink" title="JVM垃圾回收"></a>JVM垃圾回收</h2><p>Java中为了简化对象的释放，引入了自动的<strong>垃圾回收（Garbage Collection简称GC）</strong>机制。通过垃 圾回收器来对不再使用的对象完成自动的回收，垃圾回收器主要负责对<strong>堆</strong>上的内存进行回收。其他 很多现代语言比如C#、Python、Go都拥有自己的垃圾回收器。</p>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jvm/" rel="tag">jvm</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+  <article id="post-jvm/02-jvm内存区域" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/31/jvm/02-jvm%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F/">02-jvm内存区域</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2023-12-31T04:15:37.000Z" itemprop="datePublished">2023年12月31日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/java/">java</a>
+  </div>
+
+      
+      
+<a href="/2023/12/31/jvm/02-jvm%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="java虚拟机的组成"><a href="#java虚拟机的组成" class="headerlink" title="java虚拟机的组成"></a>java虚拟机的组成</h2><h3 id="运行时数据区"><a href="#运行时数据区" class="headerlink" title="运行时数据区"></a>运行时数据区</h3>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jvm/" rel="tag">jvm</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2023/12/31/jvm/02-jvm%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+  <article id="post-jvm/01-字节码和类加载器" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/29/jvm/01-%E5%AD%97%E8%8A%82%E7%A0%81%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/">01-字节码和类加载器</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2023-12-29T13:53:40.000Z" itemprop="datePublished">2023年12月29日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/java/">java</a>
+  </div>
+
+      
+      
+<a href="/2023/12/29/jvm/01-%E5%AD%97%E8%8A%82%E7%A0%81%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="java虚拟机的组成"><a href="#java虚拟机的组成" class="headerlink" title="java虚拟机的组成"></a>java虚拟机的组成</h2><h3 id="字节码文件的组成（使用jclasslib解析class文件）"><a href="#字节码文件的组成（使用jclasslib解析class文件）" class="headerlink" title="字节码文件的组成（使用jclasslib解析class文件）"></a>字节码文件的组成（使用jclasslib解析class文件）</h3>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jvm/" rel="tag">jvm</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2023/12/29/jvm/01-%E5%AD%97%E8%8A%82%E7%A0%81%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+  <article id="post-大数据入门篇" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E7%AF%87/">大数据入门篇</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2023-05-22T12:51:14.000Z" itemprop="datePublished">2023年05月22日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
+  </div>
+
+      
+      
+<a href="/2023/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E7%AF%87/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="大数据入门篇"><a href="#大数据入门篇" class="headerlink" title="大数据入门篇"></a>大数据入门篇</h2><h3 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzI4Njg5MDA5NA==&mid=2247485115&idx=1&sn=5d269f40f820c82b460993669ca6242e&chksm=ebd747badca0ceac9953f82e08b1d1a49498ebd4af77ec5d628a0682bb9f0ac5ab347411f654&token=1741918942&lang=zh_CN&scene=21#wechat_redirect">ZooKeeper</a></h3>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2023/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E7%AF%87/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+  <article id="post-java基础/IO与NIO的区别" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2020/12/23/java%E5%9F%BA%E7%A1%80/IO%E4%B8%8ENIO%E7%9A%84%E5%8C%BA%E5%88%AB/">IO与NIO的区别</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2020-12-23T08:49:13.000Z" itemprop="datePublished">2020年12月23日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/java/">java</a>
+  </div>
+
+      
+      
+<a href="/2020/12/23/java%E5%9F%BA%E7%A1%80/IO%E4%B8%8ENIO%E7%9A%84%E5%8C%BA%E5%88%AB/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p> <strong>JAVA NIO vs IO</strong> </p>
+<p> Java NIO和IO的主要区别</p>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/" rel="tag">java</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2020/12/23/java%E5%9F%BA%E7%A1%80/IO%E4%B8%8ENIO%E7%9A%84%E5%8C%BA%E5%88%AB/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+  <article id="post-sentinel实现对网关微服务管理" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2020/12/04/sentinel%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%BD%91%E5%85%B3%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86/">sentinel实现对网关微服务管理</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2020-12-04T06:48:20.000Z" itemprop="datePublished">2020年12月04日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/java/">java</a>
+  </div>
+
+      
+      
+<a href="/2020/12/04/sentinel%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%BD%91%E5%85%B3%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="Sentinel-通过-nacos-对-Spring-Cloud-Gateway-持久化管理"><a href="#Sentinel-通过-nacos-对-Spring-Cloud-Gateway-持久化管理" class="headerlink" title="Sentinel 通过 nacos 对 Spring Cloud Gateway 持久化管理"></a>Sentinel 通过 nacos 对 Spring Cloud Gateway 持久化管理</h2><h3 id="客户端使用时需引入以下模块（以-Maven-为例）："><a href="#客户端使用时需引入以下模块（以-Maven-为例）：" class="headerlink" title="客户端使用时需引入以下模块（以 Maven 为例）："></a>客户端使用时需引入以下模块（以 Maven 为例）：</h3>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%A1%86%E6%9E%B6/" rel="tag">框架</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2020/12/04/sentinel%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%BD%91%E5%85%B3%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+  <article id="post-nginx部署带项目名的vue项目" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2020/10/14/nginx%E9%83%A8%E7%BD%B2%E5%B8%A6%E9%A1%B9%E7%9B%AE%E5%90%8D%E7%9A%84vue%E9%A1%B9%E7%9B%AE/">nginx部署带项目名的vue项目</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2020-10-14T08:53:35.000Z" itemprop="datePublished">2020年10月14日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a>
+  </div>
+
+      
+      
+<a href="/2020/10/14/nginx%E9%83%A8%E7%BD%B2%E5%B8%A6%E9%A1%B9%E7%9B%AE%E5%90%8D%E7%9A%84vue%E9%A1%B9%E7%9B%AE/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>nginx部署带项目名的vue项目：</p>
+<p><img src="/2020/10/14/nginx%E9%83%A8%E7%BD%B2%E5%B8%A6%E9%A1%B9%E7%9B%AE%E5%90%8D%E7%9A%84vue%E9%A1%B9%E7%9B%AE/1.png" alt="img"></p>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%85%B6%E4%BB%96/" rel="tag">其他</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2020/10/14/nginx%E9%83%A8%E7%BD%B2%E5%B8%A6%E9%A1%B9%E7%9B%AE%E5%90%8D%E7%9A%84vue%E9%A1%B9%E7%9B%AE/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+  <article id="post-数据结构与算法/A-算法" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2020/10/01/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/A-%E7%AE%97%E6%B3%95/">A*算法</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2020-10-01T06:50:44.000Z" itemprop="datePublished">2020年10月01日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+  </div>
+
+      
+      
+<a href="/2020/10/01/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/A-%E7%AE%97%E6%B3%95/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="A-算法"><a href="#A-算法" class="headerlink" title="A*算法"></a>A*算法</h2><p> <em>A*算法是一种启发式最小代价寻路算法</em>  </p>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2020/10/01/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/A-%E7%AE%97%E6%B3%95/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+  <article id="post-数据结构与算法/凸包算法（分治）" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2020/10/01/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/%E5%87%B8%E5%8C%85%E7%AE%97%E6%B3%95%EF%BC%88%E5%88%86%E6%B2%BB%EF%BC%89/">凸包算法（分治）</a>
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2020-10-01T03:15:57.000Z" itemprop="datePublished">2020年10月01日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+  </div>
+
+      
+      
+<a href="/2020/10/01/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/%E5%87%B8%E5%8C%85%E7%AE%97%E6%B3%95%EF%BC%88%E5%88%86%E6%B2%BB%EF%BC%89/#comments" class="article-comment-link">
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="凸包问题–分治法"><a href="#凸包问题–分治法" class="headerlink" title="凸包问题–分治法"></a>凸包问题–分治法</h2><p>获取能够完全包含平面上n个给定点的凸多边形。</p>
+      
+    </div>
+    <footer class="article-footer">
+      
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+        <p class="article-more-link">
+          <a href="/2020/10/01/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/%E5%87%B8%E5%8C%85%E7%AE%97%E6%B3%95%EF%BC%88%E5%88%86%E6%B2%BB%EF%BC%89/#more">Read More</a>
+        </p>
+      
+      
+      
+    </footer>
+  </div>
+</article>
+
+
+
+    <nav id="page-nav">
+
+<span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/">下一页</a>
+</nav>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-posts"></i> 最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">03-垃圾回收</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/31/jvm/02-jvm%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F/">02-jvm内存区域</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/29/jvm/01-%E5%AD%97%E8%8A%82%E7%A0%81%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/">01-字节码和类加载器</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E7%AF%87/">大数据入门篇</a>
+          </li>
+        
+          <li>
+            <a href="/2020/12/23/java%E5%9F%BA%E7%A1%80/IO%E4%B8%8ENIO%E7%9A%84%E5%8C%BA%E5%88%AB/">IO与NIO的区别</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/JQuery/" style="font-size: 10px;">JQuery</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/java/" style="font-size: 16.67px;">java</a> <a href="/tags/jvm/" style="font-size: 11.67px;">jvm</a> <a href="/tags/python/" style="font-size: 15px;">python</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/%E5%85%B6%E4%BB%96/" style="font-size: 18.33px;">其他</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E6%A1%86%E6%9E%B6/" style="font-size: 20px;">框架</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 13.33px;">算法</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 10px;">设计模式</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-classify"></i> 分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/SQL/">SQL</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/java/">java</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-archive"></i> 归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/">2023年</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020年</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019年</a><span class="archive-list-count">52</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/JQuery/" rel="tag">JQuery</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/" rel="tag">java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jvm/" rel="tag">jvm</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/" rel="tag">python</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%85%B6%E4%BB%96/" rel="tag">其他</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%A1%86%E6%9E%B6/" rel="tag">框架</a><span class="tag-list-count">27</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-link"></i> 友情链接</h3>
+    <div class="widget">
+      <ul>
+      
+        <li>
+          <a target="_blank" rel="noopener" href="https://github.com/Wang-QP">Wang-QP</a>
+        </li>
+      
+      </ul>
+    </div>
+  </div>
+
+
+  
+</aside>
+        
+      </div>
+      <a id="totop" href="#top"></a>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      <p>
+        <a href="/sitemap.xml">网站地图</a>
+<!--         <span> | </span><a href="/atom.xml">订阅本站</a> -->
+        <span> | </span><a href="/about/">联系博主</a>
+      </p>
+      
+        <p>
+          <i class="fa fa-visitors"></i>
+          <i id="busuanzi_container_site_uv"><i id="busuanzi_value_site_uv"></i></i>
+          ，
+          <i class="fa fa-views"></i>
+          <i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>
+        </p>
+      
+      <p>
+        <span>Copyright &copy; 2024 JasonWong.</span>
+        <span>Theme by <a href="https://github.com/chaooo/hexo-theme-BlueLake/" target="_blank">BlueLake.</a></span>
+        <span>Powered by <a href="https://hexo.io/" target="_blank">Hexo.</a></span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+    </div>
+  </div>
+  
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+<script src="/js/search.json.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+  
+<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+
+
+
+  
+
+
+
+</body>
+</html>

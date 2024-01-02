@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>03-垃圾回收 | WQP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  
+  
+    <link rel="alternate" href="/atom.xml" title="WQP" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">WQP</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        
+          <a class="main-nav-link" href="/."><i class="fa fa-home"></i> 首页</a>
+        
+          <a class="main-nav-link" href="/archives/"><i class="fa fa-archive"></i> 归档</a>
+        
+          <a class="main-nav-link" href="/about/"><i class="fa fa-user"></i> 关于</a>
+        
+      </nav>
+    </div>
+    <div id="search-form">
+      <div id="result-mask" class="hide"></div>
+      <label><input id="search-key" type="text" autocomplete="off" placeholder="搜索"></label>
+      <div id="result-wrap" class="hide">
+        <div id="search-result"></div>
+      </div>
+      <div class="hide">
+        <template id="search-tpl">
+          <div class="item">
+            <a href="/{path}" title="{title}">
+              <div class="title">{title}</div>
+              <div class="time">{date}</div>
+              <div class="tags">{tags}</div>
+            </a>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-jvm/03-垃圾回收" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      03-垃圾回收
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2023-12-31T12:28:24.000Z" itemprop="datePublished">2023年12月31日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/java/">java</a>
+  </div>
+
+      
+        <span class="article-views">
+  <i class="fa fa-views"></i>
+  <i id="busuanzi_container_page_pv">
+      <i id="busuanzi_value_page_pv"></i>
+  </i>
+</span>
+
+      
+      
+<a href="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/#comments" class="article-comment-link">
+  
+    
+    
+    
+    
+    
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="JVM垃圾回收"><a href="#JVM垃圾回收" class="headerlink" title="JVM垃圾回收"></a>JVM垃圾回收</h2><p>Java中为了简化对象的释放，引入了自动的<strong>垃圾回收（Garbage Collection简称GC）</strong>机制。通过垃 圾回收器来对不再使用的对象完成自动的回收，垃圾回收器主要负责对<strong>堆</strong>上的内存进行回收。其他 很多现代语言比如C#、Python、Go都拥有自己的垃圾回收器。</p>
+<h3 id="自动垃圾回收"><a href="#自动垃圾回收" class="headerlink" title="自动垃圾回收"></a>自动垃圾回收</h3><h5 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h5><ol>
+<li>解决系统僵死的问题：频繁的垃圾回收可能导致系统僵死</li>
+<li>性能优化：对垃圾回收器进行合理的设置可以有效地提升程序的执行性能</li>
+</ol>
+<p><strong>线程不共享的部分，都是伴随着线程的创建而创建，线程的销毁而销毁</strong>。而方法的栈帧在执行完方法之后就会自动弹出栈并释放掉对应的内存。</p>
+<h3 id="方法区回收"><a href="#方法区回收" class="headerlink" title="方法区回收"></a>方法区回收</h3><ul>
+<li><p>方法区中能回收的内容主要就是不再使用的类。</p>
+<p>判定一个类可以被卸载。需要同时满足下面三个条件： </p>
+<ol>
+<li><strong>此类所有实例对象都已经被回收，在堆中不存在任何该类的实例对象以及子类对象。</strong></li>
+<li><strong>加载该类的类加载器已经被回收。</strong></li>
+<li><strong>该类对应的 java.lang.Class 对象没有在任何地方被引用。</strong></li>
+</ol>
+</li>
+<li><p>手动触发回收</p>
+<p><strong>如果需要手动触发垃圾回收，可以调用System.gc()方法</strong>。调用System.gc()方法并不一定会立即回收垃圾，仅仅是向Java虚拟机发送一个垃圾回收的请求，具体是否需要执行垃圾回收Java虚拟机会自行判断。</p>
+</li>
+<li><p>方法区回收场景</p>
+<p>开发中此类场景一般很少出现，主要在如 OSGi、JSP 的热部署等应用场景中。 每个jsp文件对应一个唯一的类加载器，当一个jsp文件修改了，就直接卸载这个jsp类 加载器。重新创建类加载器，重新加载jsp文件。</p>
+</li>
+</ul>
+<h3 id="堆回收"><a href="#堆回收" class="headerlink" title="堆回收"></a>堆回收</h3><p><strong>判断堆上的对象是否可回收</strong> </p>
+<p><u>Java中的对象是否能被回收，是根据对象是否被引用来决定的。如果对象被引用了，说明该对象还 在使用，不允许被回收。</u></p>
+<p><strong>判断堆上的对象没有被引用</strong></p>
+<p>常见的有两种判断方法：<strong>引用计数法</strong>和<strong>可达性分析法</strong></p>
+<ul>
+<li>引用计数器<ul>
+<li>引用计数法会为每个对象维护一个引用计数器，当对象被引用时加1，取消引用时减1。</li>
+<li>引用计数法的优点是实现简单，C++中的智能指针就采用了引用计数法，但是它也存在缺点，主要有两点： <ul>
+<li>每次引用和取消引用都需要维护计数器，对系统性能会有一定的影响 </li>
+<li>存在循环引用问题，所谓循环引用就是当A引用B，B同时引用A时会出现对象无法回收的问题。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>可达性分析法<ul>
+<li>Java使用的是<strong>可达性分析算法</strong>来判断对象是否可以被回收。可达性分析将对象分为两类：垃圾回收的根对象（GC Root）和普通对象，对象与对象之间存在引用关系。以下属于GC Root对象：<ul>
+<li>线程Thread对象。 </li>
+<li>系统类加载器加载的java.lang.Class对象。</li>
+<li>监视器对象，用来保存同步锁synchronized关键字持有的对象。</li>
+<li>本地方法调用时使用的全局对象。</li>
+</ul>
+</li>
+<li>查看GC Root：通过arthas和eclipse Memory Analyzer (MAT) 工具可以查看GC Root<ul>
+<li>使用arthas的heapdump命令将堆内存快照保存到本地磁盘中。</li>
+<li>使用MAT工具打开堆内存快照文件。</li>
+<li>选择GC Roots功能查看所有的GC Root。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>查看垃圾回收日志 使用JVM参数 -verbose:gc</strong></p>
+<p><img src="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%97%A5%E5%BF%97.jpg" alt="img"></p>
+<h3 id="对象引用"><a href="#对象引用" class="headerlink" title="对象引用"></a>对象引用</h3><p>可达性算法中描述的对象引用，一般指的是强引用，即是GCRoot对象对普通对象有引用关系，只要这层关系存在， 普通对象就不会被回收。除了<strong>强引用</strong>之外，Java中还设计了几种其他引用方式：</p>
+<ul>
+<li><p>软引用</p>
+<p>软引用相对于强引用是一种比较弱的引用关系，如果一个对象只有软引用关联到它，当程序内存不足时，就会将软 引用中的数据进行回收。</p>
+<p><img src="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/%E8%BD%AF%E5%BC%95%E7%94%A8.jpg" alt="img"></p>
+<p>软引用的执行过程：</p>
+<pre><code>1. 将对象使用软引用包装起来，new SoftReference&lt;对象类型&gt;(对象)。 
+1. 内存不足时，虚拟机尝试进行垃圾回收。 
+1. 如果垃圾回收仍不能解决内存不足的问题，回收软引用中的对象。 
+1. 如果依然内存不足，抛出OutOfMemory异常。
+</code></pre>
+<p>SoftReference提供了一套队列机制：</p>
+<pre><code>1. 软引用创建时，通过构造器传入引用队列。
+1. 在软引用中包含的对象被回收时，该软引用对象会被放入引用队列。
+1. 通过代码遍历引用队列，将SoftReference的强引用删除。
+</code></pre>
+</li>
+<li><p>弱引用</p>
+<p>弱引用的整体机制和软引用基本一致，区别在于弱引用包含的对象在垃圾回收时，不管内存够不够都会直接被回收。</p>
+<p>在JDK 1.2版之后提供了WeakReference类来实现弱引用，弱引用主要在ThreadLocal中使用。</p>
+<p>弱引用对象本身也可以使用引用队列进行回收。</p>
+<p><img src="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/%E5%BC%B1%E5%BC%95%E7%94%A8.jpg" alt="img"></p>
+</li>
+<li><p>虚引用</p>
+<p>虚引用也叫幽灵引用&#x2F;幻影引用，不能通过虚引用对象获取到包含的对象。虚引用唯一的用途是当对象被垃圾回 收器回收时可以接收到对应的通知。</p>
+<p>Java中使用PhantomReference实现了虚引用，直接内存中为了及时知道 直接内存对象不再使用，从而回收内存，使用了虚引用来实现。</p>
+</li>
+<li><p>终结器引用</p>
+<p>终结器引用指的是在对象需要被回收时，终结器引用会关联对象并放置在Finalizer类中的引用队列中，在稍后 由一条由FinalizerThread线程从队列中获取对象，然后执行对象的finalize方法，在对象第二次被回收时，该 对象才真正的被回收。在这个过程中可以在finalize方法中再将自身对象使用强引用关联上，但是不建议这样做。</p>
+</li>
+</ul>
+<p><strong>虚引用和终结器引用用在常规开发中是不会使用的。</strong></p>
+
+        
+            <div id="toc-article">
+                
+  <div class="widget-wrap" id="toc-wrap">
+    <h3 class="widget-title"><i class="fa fa-toc"></i> 文章目录</h3>
+    <div class="widget">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="toc-text">JVM垃圾回收</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="toc-text">自动垃圾回收</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">应用场景</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA%E5%9B%9E%E6%94%B6"><span class="toc-text">方法区回收</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86%E5%9B%9E%E6%94%B6"><span class="toc-text">堆回收</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%BC%95%E7%94%A8"><span class="toc-text">对象引用</span></a></li></ol></li></ol>
+    </div>
+  </div>
+
+
+            </div>
+        
+        
+          <blockquote id="copyright">
+              <p>原文链接: <a href="http://wang-qp.github.io/2023/12/31/jvm/03-垃圾回收/">http://wang-qp.github.io/2023/12/31/jvm/03-垃圾回收/</a></p>
+              <p>版权声明: 转载请注明出处.</p>
+          </blockquote>
+        
+      
+    </div>
+    <footer class="article-footer">
+      
+        <div class="article-tag-wrap">
+          
+
+          
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jvm/" rel="tag">jvm</a></li></ul>
+
+          
+
+
+        </div>
+      
+      
+        
+<nav id="article-nav">
+  
+    <a href="/2023/12/31/jvm/02-jvm%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">older</strong>
+      <div class="article-nav-title">
+        
+          02-jvm内存区域
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+      
+      
+        
+
+
+
+
+
+
+
+
+      
+    </footer>
+  </div>
+</article>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-posts"></i> 最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">03-垃圾回收</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/31/jvm/02-jvm%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F/">02-jvm内存区域</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/29/jvm/01-%E5%AD%97%E8%8A%82%E7%A0%81%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/">01-字节码和类加载器</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E7%AF%87/">大数据入门篇</a>
+          </li>
+        
+          <li>
+            <a href="/2020/12/23/java%E5%9F%BA%E7%A1%80/IO%E4%B8%8ENIO%E7%9A%84%E5%8C%BA%E5%88%AB/">IO与NIO的区别</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/JQuery/" style="font-size: 10px;">JQuery</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/java/" style="font-size: 16.67px;">java</a> <a href="/tags/jvm/" style="font-size: 11.67px;">jvm</a> <a href="/tags/python/" style="font-size: 15px;">python</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/%E5%85%B6%E4%BB%96/" style="font-size: 18.33px;">其他</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E6%A1%86%E6%9E%B6/" style="font-size: 20px;">框架</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 13.33px;">算法</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 10px;">设计模式</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-classify"></i> 分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/SQL/">SQL</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/java/">java</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-archive"></i> 归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/">2023年</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020年</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019年</a><span class="archive-list-count">52</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/JQuery/" rel="tag">JQuery</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/" rel="tag">java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jvm/" rel="tag">jvm</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/" rel="tag">python</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%85%B6%E4%BB%96/" rel="tag">其他</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%A1%86%E6%9E%B6/" rel="tag">框架</a><span class="tag-list-count">27</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-link"></i> 友情链接</h3>
+    <div class="widget">
+      <ul>
+      
+        <li>
+          <a target="_blank" rel="noopener" href="https://github.com/Wang-QP">Wang-QP</a>
+        </li>
+      
+      </ul>
+    </div>
+  </div>
+
+
+  
+</aside>
+        
+      </div>
+      <a id="totop" href="#top"></a>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      <p>
+        <a href="/sitemap.xml">网站地图</a>
+<!--         <span> | </span><a href="/atom.xml">订阅本站</a> -->
+        <span> | </span><a href="/about/">联系博主</a>
+      </p>
+      
+        <p>
+          <i class="fa fa-visitors"></i>
+          <i id="busuanzi_container_site_uv"><i id="busuanzi_value_site_uv"></i></i>
+          ，
+          <i class="fa fa-views"></i>
+          <i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>
+        </p>
+      
+      <p>
+        <span>Copyright &copy; 2024 JasonWong.</span>
+        <span>Theme by <a href="https://github.com/chaooo/hexo-theme-BlueLake/" target="_blank">BlueLake.</a></span>
+        <span>Powered by <a href="https://hexo.io/" target="_blank">Hexo.</a></span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+    </div>
+  </div>
+  
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+<script src="/js/search.json.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+  
+<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+  
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+
+
+
+
+</body>
+</html>
