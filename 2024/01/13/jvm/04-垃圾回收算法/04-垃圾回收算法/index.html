@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>04-垃圾回收算法 | WQP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  
+  
+    <link rel="alternate" href="/atom.xml" title="WQP" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+  
+    
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+  
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">WQP</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        
+          <a class="main-nav-link" href="/."><i class="fa fa-home"></i> 首页</a>
+        
+          <a class="main-nav-link" href="/archives/"><i class="fa fa-archive"></i> 归档</a>
+        
+          <a class="main-nav-link" href="/about/"><i class="fa fa-user"></i> 关于</a>
+        
+      </nav>
+    </div>
+    <div id="search-form">
+      <div id="result-mask" class="hide"></div>
+      <label><input id="search-key" type="text" autocomplete="off" placeholder="搜索"></label>
+      <div id="result-wrap" class="hide">
+        <div id="search-result"></div>
+      </div>
+      <div class="hide">
+        <template id="search-tpl">
+          <div class="item">
+            <a href="/{path}" title="{title}">
+              <div class="title">{title}</div>
+              <div class="time">{date}</div>
+              <div class="tags">{tags}</div>
+            </a>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-jvm/04-垃圾回收算法/04-垃圾回收算法" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      04-垃圾回收算法
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2024-01-13T07:44:24.000Z" itemprop="datePublished">2024年01月13日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/java/">java</a>
+  </div>
+
+      
+        <span class="article-views">
+  <i class="fa fa-views"></i>
+  <i id="busuanzi_container_page_pv">
+      <i id="busuanzi_value_page_pv"></i>
+  </i>
+</span>
+
+      
+      
+<a href="/2024/01/13/jvm/04-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/04-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/#comments" class="article-comment-link">
+  
+    
+    
+    
+    
+    
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h2><p><strong>垃圾回收主要做的两件事：</strong></p>
+<ol>
+<li>找到内存中存活的对象</li>
+<li>释放不再存活对象的内存，使得程序能再次利用这部分空间</li>
+</ol>
+<p><strong>垃圾回收算法的评价标准：</strong></p>
+<p>Java垃圾回收过程会通过单独的GC线程来完成，但是不管使用哪一种GC算法，都会有部分阶段需要停止所 有的用户线程。这个过程被称之为Stop The World简称STW，如果STW时间过长则会影响用户的使用。</p>
+<p><img src="/STW.jpg" alt="img"></p>
+<p>判断GC算法是否优秀的三个方面：</p>
+<ol>
+<li><p>吞吐量：指的是 CPU 用于执行用户代码的时间与 CPU 总执行时间的比值，即吞吐量 &#x3D; 执行用户代码时间 &#x2F; （执行用户代码时间 + GC时间）。吞吐量数值越高，垃圾回收的效率就越高。</p>
+</li>
+<li><p>最大暂停时间：最大暂停时间指的是所有在垃圾回收过程中的STW时间最大值。最大暂停时间越短，用户使用系统时 受到的影响就越短。</p>
+</li>
+<li><p>堆使用效率：不同垃圾回收算法，对堆内存的使用方式是不同的。比如标记清除算法，可以使用完整的堆内存。而复制算 法会将堆内存一分为二，每次只能使用一半内存。从堆使用效率上来说，标记清除算法要优于复制算法。</p>
+<p><img src="/%E5%A0%86%E5%88%86%E9%85%8D.jpg" alt="img"></p>
+</li>
+</ol>
+<p>上述三种评价标准：堆使用效率、吞吐量，以及最大暂停时间不可兼得。 </p>
+<p>一般来说，堆内存越大，最大暂停时间就越长。想要减少最大暂停时间，就会降低吞吐量。 </p>
+<p><strong>不同的垃圾回收算法，适用于不同的场景。</strong></p>
+<h3 id="垃圾回收算法的分类"><a href="#垃圾回收算法的分类" class="headerlink" title="垃圾回收算法的分类"></a>垃圾回收算法的分类</h3><ul>
+<li>标记-清除算法</li>
+<li>复制算法</li>
+<li>标记-整理算法</li>
+<li>分代GC</li>
+</ul>
+<h5 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h5><p>标记清除算法的核心思想分为两个阶段： </p>
+<ol>
+<li>标记阶段，将所有存活的对象进行标记。Java中使用可达性分析算法，从GC Root开始通过引用链遍历出 所有存活对象。</li>
+<li>清除阶段，从内存中删除没有被标记也就是非存活对象。</li>
+</ol>
+<p>优点：实现简单，只需要在第一阶段给每个对象维护标志位，第二阶段删除对象即可。</p>
+<p>缺点：</p>
+<ol>
+<li>碎片化问题 由于内存是连续的，所以在对象被删除之后，内存中会出现很多细小的可用内存单元。如果我们需要的是一 个比较大的空间，很有可能这些内存单元的大小过小无法进行分配。</li>
+<li>分配速度慢。由于内存碎片的存在，需要维护一个空闲链表，极有可能发生每次需要遍历到链表的最后才 能获得合适的内存空间。</li>
+</ol>
+<h5 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h5><p>复制算法的核心思想是： </p>
+<ol>
+<li>准备两块空间From空间和To空间，每次在对象分配阶段，只能使用其中一块空间（From空间）。 </li>
+<li>在垃圾回收GC阶段，将From中存活对象复制到To空间。 </li>
+<li>将两块空间的From和To名字互换。</li>
+</ol>
+<p>完整的复制算法的例子： </p>
+<ol>
+<li>将堆内存分割成两块From空间 To空间，对象分配阶段，创建对象。 </li>
+<li>GC阶段开始，将GC Root搬运到To空间 </li>
+<li>将GC Root关联的对象，搬运到To空间 </li>
+<li>清理From空间，并把名称互换</li>
+</ol>
+<p>优点：</p>
+<ol>
+<li>吞吐量高：复制算法只需要遍历一次存活对象 复制到To空间即可，比标记-整理 算法少了一次遍历的过程，因而性 能较好，但是不如标记-清除算法， 因为标记清除算法不需要进行对象 的移动</li>
+<li>不会发生碎片化：复制算法在复制之后就会将对象按顺序放 入To空间中，所以对象以外的区域都是可 用空间，不存在碎片化内存空间。</li>
+</ol>
+<p>缺点：内存使用效率低(每次只能让一半的内存空间来为创 建对象使用)</p>
+<h5 id="标记-整理算法"><a href="#标记-整理算法" class="headerlink" title="标记-整理算法"></a>标记-整理算法</h5><p>标记整理算法也叫标记压缩算法，是对标记清理算法中容易产生内存碎片问题的一种解决方案。 </p>
+<p>核心思想分为两个阶段： </p>
+<ol>
+<li>标记阶段，将所有存活的对象进行标记。Java中使用可达性分析算法，从GC Root开始通过引用链遍历出 所有存活对象。 </li>
+<li>整理阶段，将存活对象移动到堆的一端。清理掉存活对象的内存空间。</li>
+</ol>
+<p><img src="/%E6%A0%87%E8%AE%B0%E6%95%B4%E7%90%86%E7%AE%97%E6%B3%95.jpg" alt="img"></p>
+<p>优点：</p>
+<ol>
+<li>内存使用效率高：整个堆内存都可以使用，不会像复 制算法只能使用半个堆内存</li>
+<li>不会发生碎片化：在整理阶段可以将对象往内存的一侧进行 移动，剩下的空间都是可以分配对象的有 效空间</li>
+</ol>
+<p>缺点：整理阶段的效率不高</p>
+<h5 id="分代GC算法"><a href="#分代GC算法" class="headerlink" title="分代GC算法"></a>分代GC算法</h5><p><img src="/%E5%88%86%E4%BB%A3GC.jpg" alt="img"></p>
+<p><strong>arthas查看分代之后的内存情况</strong></p>
+<ul>
+<li>在JDK8中，添加-XX:+UseSerialGC参数使用分代回收的垃圾回收器，运行程序。</li>
+<li>在arthas中使用memory命令查看内存，显示出三个区域的内存情况。</li>
+</ul>
+<p><img src="/arthas.jpg" alt="img"></p>
+<p><strong>调整内存区域的大小</strong></p>
+<p>根据以下虚拟机参数，调整堆的大小并观察结果。注意加上**-XX:+UseSerialGC**</p>
+<p><img src="/%E8%B0%83%E6%95%B4%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E5%A4%A7%E5%B0%8F.jpg" alt="img"></p>
+<p><strong>分代GC算法的过程：</strong></p>
+<p>分代回收时，创建出来的对象，首先会被放入Eden伊甸园区。 </p>
+<p>随着对象在Eden区越来越多，如果Eden区满，新创建的对象已经无法放入，就会触发年轻代的GC，称为 Minor GC或者Young GC。 </p>
+<p>Minor GC会把需要eden中和From需要回收的对象回收，把没有回收的对象放入To区。</p>
+<p><img src="/MinorGC1.jpg" alt="img"></p>
+<p>接下来，S0会变成To区，S1变成From区。当eden区满时再往里放入对象，依然会发生Minor GC。 </p>
+<p>此时会回收eden区和S1(from)中的对象，并把eden和from区中剩余的对象放入S0。 </p>
+<p>注意：每次Minor GC中都会为对象记录他的年龄，初始值为0，每次GC完加1。</p>
+<p><img src="/MinorGC2.jpg" alt="img"></p>
+<p>如果Minor GC后对象的年龄达到阈值（最大15，默认值和垃圾回收器有关），对象就会被晋升至老年代。 </p>
+<p>当老年代中空间不足，无法放入新的对象时，先尝试minor gc如果还是不足，就会触发Full GC，Full GC会对整个堆进行垃圾回收。 </p>
+<p>如果Full GC依然无法回收掉老年代的对象，那么当对象继续放入老年代时，就会抛出Out Of Memory异常。</p>
+<p><img src="/FullGC.jpg" alt="img"></p>
+<h3 id="垃圾回收器"><a href="#垃圾回收器" class="headerlink" title="垃圾回收器"></a>垃圾回收器</h3><p>分代GC算法将堆分成年轻代和老年代主要原因有：</p>
+<ol>
+<li>可以通过调整年轻代和老年代的比例来适应不同类型的应用程序，提高内存的利用率和性能。</li>
+<li>新生代和老年代使用不同的垃圾回收算法，新生代一般选择复制算法，老年代可以选择标记-清除和标记-整理 算法，由程序员来选择灵活度较高。</li>
+<li>分代的设计中允许只回收新生代（minor gc），如果能满足对象分配的要求就不需要对整个堆进行回收(full gc),STW时间就会减少。</li>
+</ol>
+<p><img src="/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95.jpg" alt="img"></p>
+<p><strong>垃圾回收器的组合关系</strong></p>
+<p><img src="/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8%E7%BB%84%E5%90%88%E5%85%B3%E7%B3%BB.jpg" alt="img"></p>
+<h5 id="Serial垃圾回收器"><a href="#Serial垃圾回收器" class="headerlink" title="Serial垃圾回收器"></a>Serial垃圾回收器</h5><p><img src="/Serial%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8.jpg" alt="img"></p>
+<p><img src="/SerialOld%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8.jpg" alt="img"></p>
+<h5 id="ParNew垃圾回收器"><a href="#ParNew垃圾回收器" class="headerlink" title="ParNew垃圾回收器"></a>ParNew垃圾回收器</h5><p><img src="/ParNew%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8.jpg" alt="img"></p>
+<p><img src="/CMS%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8.jpg" alt="img"></p>
+<p>CMS执行步骤：</p>
+<ol>
+<li>初始标记，用极短的时间标记出GC Roots能直接关联到的对象。 </li>
+<li>并发标记, 标记所有的对象，用户线程不需要暂停。</li>
+<li>重新标记，由于并发标记阶段有些对象会发生了变化，存在错标、漏标等情况，需要重新标记。</li>
+<li>并发清理，清理死亡的对象，用户线程不需要暂停。</li>
+</ol>
+<p><img src="/CMS%E6%AD%A5%E9%AA%A4.jpg" alt="img"></p>
+<p>CMS缺点：</p>
+<ol>
+<li>CMS使用了标记-清除算法，在垃圾收集结束之后会出现大量的内存碎片，CMS会在Full GC时进行碎片的整理。 这样会导致用户线程暂停，可以使用-XX:CMSFullGCsBeforeCompaction&#x3D;N 参数（默认0）调整N次Full GC之 后再整理。</li>
+<li>无法处理在并发清理过程中产生的“浮动垃圾”，不能做到完全的垃圾回收。</li>
+<li>如果老年代内存不足无法分配对象，CMS就会退化成Serial Old单线程回收老年代。</li>
+</ol>
+<p>CMS垃圾回收器线程资源争抢问题</p>
+<ul>
+<li><p>在CMS中并发阶段运行时的线程数可以通过-XX:ConcGCThreads参数设置，默认值为0，由系统计算得出。</p>
+</li>
+<li><p>计算公式为(-XX:ParallelGCThreads定义的线程数 + 3) &#x2F; 4， ParallelGCThreads是STW停顿之后的 并行线程数</p>
+</li>
+<li><p>ParallelGCThreads是由处理器核数决定的： </p>
+<ul>
+<li>当cpu核数小于8时，ParallelGCThreads &#x3D; CPU核数 </li>
+<li>否则 ParallelGCThreads &#x3D; 8 + (CPU核数 – 8 )*5&#x2F;8</li>
+</ul>
+<p><img src="/%E7%BA%BF%E7%A8%8B%E6%95%B0.jpg" alt="img"></p>
+<p><img src="/CMS%E6%AD%A5%E9%AA%A4%E7%BA%BF%E7%A8%8B%E6%83%85%E5%86%B5.jpg" alt="img"></p>
+</li>
+<li><p>由于CPU的核心数有限，就会影响用户线程执行的性能。</p>
+</li>
+</ul>
+<h5 id="Parallel-Scavenge垃圾回收器"><a href="#Parallel-Scavenge垃圾回收器" class="headerlink" title="Parallel Scavenge垃圾回收器"></a>Parallel Scavenge垃圾回收器</h5><p><img src="/ParallelScavenge%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8.jpg" alt="img"></p>
+<p><img src="/ParallelOld%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8.jpg" alt="img"></p>
+<p><img src="/ParallelScavenge%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8%E6%80%BB%E7%BB%93.jpg" alt="img"></p>
+<h3 id="G1垃圾回收器"><a href="#G1垃圾回收器" class="headerlink" title="G1垃圾回收器"></a>G1垃圾回收器</h3><p><img src="/G1_1.jpg" alt="img"></p>
+<p><img src="/G1_2.jpg" alt="img"></p>
+<p><img src="/G1_3.jpg" alt="img"></p>
+<p><img src="/G1_4.jpg" alt="img"></p>
+<p><img src="/G1_5.jpg" alt="img"></p>
+<p><img src="/G1_6.jpg" alt="img"></p>
+<p><img src="/G1_7.jpg" alt="img"></p>
+<p><img src="/G1_8.jpg" alt="img"></p>
+<p><img src="/G1_9.jpg" alt="img"></p>
+<p><img src="/G1_10.jpg" alt="img"></p>
+<p><img src="/G1_11.jpg" alt="img"></p>
+<p><img src="/G1_12.jpg" alt="img"></p>
+<p><img src="/G1_13.jpg" alt="img"></p>
+<p><img src="/G1_14.jpg" alt="img"></p>
+<h5 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h5><p>垃圾回收器比较好的组合选择如下： </p>
+<p><strong>JDK8及之前：</strong> </p>
+<ul>
+<li><strong>ParNew + CMS（关注暂停时间）</strong></li>
+<li><strong>Parallel Scavenge + Parallel Old (关注 吞吐量)</strong></li>
+<li><strong>G1（JDK8之前不建议，较大堆并且关注暂停时间）</strong></li>
+</ul>
+<p><strong>JDK9之后: G1（默认）</strong> </p>
+<p>从JDK9之后，由于G1日趋成熟，JDK默认的垃圾回收器已经修改为G1，所以 强烈建议在生产环境上使用G1。</p>
+
+        
+            <div id="toc-article">
+                
+  <div class="widget-wrap" id="toc-wrap">
+    <h3 class="widget-title"><i class="fa fa-toc"></i> 文章目录</h3>
+    <div class="widget">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95"><span class="toc-text">垃圾回收算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-text">垃圾回收算法的分类</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95"><span class="toc-text">标记-清除算法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E7%AE%97%E6%B3%95"><span class="toc-text">复制算法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%A0%87%E8%AE%B0-%E6%95%B4%E7%90%86%E7%AE%97%E6%B3%95"><span class="toc-text">标记-整理算法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%86%E4%BB%A3GC%E7%AE%97%E6%B3%95"><span class="toc-text">分代GC算法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="toc-text">垃圾回收器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Serial%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="toc-text">Serial垃圾回收器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#ParNew%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="toc-text">ParNew垃圾回收器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Parallel-Scavenge%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="toc-text">Parallel Scavenge垃圾回收器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#G1%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="toc-text">G1垃圾回收器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+  </div>
+
+
+            </div>
+        
+        
+          <blockquote id="copyright">
+              <p>原文链接: <a href="https://wang-qp.github.io/2024/01/13/jvm/04-垃圾回收算法/04-垃圾回收算法/">https://wang-qp.github.io/2024/01/13/jvm/04-垃圾回收算法/04-垃圾回收算法/</a></p>
+              <p>版权声明: 转载请注明出处.</p>
+          </blockquote>
+        
+      
+    </div>
+    <footer class="article-footer">
+      
+        <div class="article-tag-wrap">
+          
+
+          
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jvm/" rel="tag">jvm</a></li></ul>
+
+          
+
+
+        </div>
+      
+      
+        
+<nav id="article-nav">
+  
+    <a href="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">older</strong>
+      <div class="article-nav-title">
+        
+          03-垃圾回收
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+      
+      
+        
+  <div id="comments"></div>
+
+
+
+
+
+
+
+
+
+      
+    </footer>
+  </div>
+</article>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-posts"></i> 最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/01/13/jvm/04-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/04-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/">04-垃圾回收算法</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/31/jvm/03-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">03-垃圾回收</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/31/jvm/02-jvm%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F/">02-jvm内存区域</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/29/jvm/01-%E5%AD%97%E8%8A%82%E7%A0%81%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/">01-字节码和类加载器</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E7%AF%87/">大数据入门篇</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/JQuery/" style="font-size: 10px;">JQuery</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/java/" style="font-size: 16.67px;">java</a> <a href="/tags/jvm/" style="font-size: 11.67px;">jvm</a> <a href="/tags/python/" style="font-size: 15px;">python</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/%E5%85%B6%E4%BB%96/" style="font-size: 18.33px;">其他</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E6%A1%86%E6%9E%B6/" style="font-size: 20px;">框架</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 13.33px;">算法</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 10px;">设计模式</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-classify"></i> 分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/SQL/">SQL</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/java/">java</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-archive"></i> 归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/">2024年</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/">2023年</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020年</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019年</a><span class="archive-list-count">52</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/JQuery/" rel="tag">JQuery</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/" rel="tag">java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jvm/" rel="tag">jvm</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/" rel="tag">python</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%85%B6%E4%BB%96/" rel="tag">其他</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%A1%86%E6%9E%B6/" rel="tag">框架</a><span class="tag-list-count">27</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-link"></i> 友情链接</h3>
+    <div class="widget">
+      <ul>
+      
+        <li>
+          <a target="_blank" rel="noopener" href="https://github.com/Wang-QP">Wang-QP</a>
+        </li>
+      
+      </ul>
+    </div>
+  </div>
+
+
+  
+</aside>
+        
+      </div>
+      <a id="totop" href="#top"></a>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      <p>
+        <a href="/sitemap.xml">网站地图</a>
+<!--         <span> | </span><a href="/atom.xml">订阅本站</a> -->
+        <span> | </span><a href="/about/">联系博主</a>
+      </p>
+      
+        <p>
+          <i class="fa fa-visitors"></i>
+          <i id="busuanzi_container_site_uv"><i id="busuanzi_value_site_uv"></i></i>
+          ，
+          <i class="fa fa-views"></i>
+          <i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>
+        </p>
+      
+      <p>
+        <span>Copyright &copy; 2024 JasonWong.</span>
+        <span>Theme by <a href="https://github.com/chaooo/hexo-theme-BlueLake/" target="_blank">BlueLake.</a></span>
+        <span>Powered by <a href="https://hexo.io/" target="_blank">Hexo.</a></span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+    </div>
+  </div>
+  
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+<script src="/js/search.json.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+  
+<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+  
+
+
+
+  
+    
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+    
+<script src="//cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.js"></script>
+
+    <script>
+      var gitalk = new Gitalk({
+        clientID: '6995b3fc4f0ec28e2dc8',
+        clientSecret: '21c1cf4ea225a5644081c36a42d4af3cec2d6261',
+        repo: 'wang-qp.github.io',
+        owner: 'Wang-qp',
+        admin: ['Wang-qp'],
+        id: md5(window.location.pathname),
+        distractionFreeMode: false,
+        language: 'zh-CN',
+        pagerDirection: 'last'
+      });
+      gitalk.render('comments');
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+
+
+
+
+</body>
+</html>
